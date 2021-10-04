@@ -1,0 +1,83 @@
+﻿@page "/books/details/{Id:int}"
+@page "/books/create"
+
+@inject Inlämning_API.WebbShopAPI API
+@inject NavigationManager NavigationManager
+
+
+<EditForm Model="@Book" class="col-sm-12 col-md-10 col-lg-8 p-0">
+    <div class="form-group">
+        <label for="titel">Titel</label>
+        <InputText id="titel" @bind-Value="@Book.Title" class="form-control" placeholder></InputText>
+    </div>
+    <div class="form-group">
+        <label for="author">Author</label>
+        <InputText id="author" @bind-Value="@Book.Author" class="form-control" placeholder></InputText>
+    </div>
+    <div class="form-group">
+        <label for="price">Price</label>
+        <InputNumber id="Price" @bind-Value="@Book.Price" class="form-control" placeholder></InputNumber>
+    </div>
+
+    <div class="form-group justify-content-between">
+        <button class="btn btn-sm btn-success" hidden="@(Id==null)" @onclick="()=>handlePurchase(Book.Id)">Buy</button>
+        <button class="btn btn-sm btn-danger" hidden="@(Id==null)" @onclick="()=>handleAdd(Book.Id)">Add</button>
+        <hr />
+        <button type="submit" @onclick="() => HandleOnValidSubmit()" hidden="@(Id!=null) " class="btn btn-sm btn-success">Create</button>
+        <button type="submit" @onclick="() => HandleOnValidSubmit()" class="btn btn-sm btn-success">Save</button>
+        <button class="btn btn-sm btn-danger" @onclick="()=>DeleteBook(Book.Id)">Delete</button>
+    </div>
+    <div class="container-fluid">
+        <span>Book amount: @Book.Amount</span>
+    </div>
+</EditForm>
+
+
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+    public Inlämning_API.Models.Book Book = new Inlämning_API.Models.Book();
+
+    protected override void OnInitialized()
+    {
+        API.Login("Administrator", "CodicRulez");
+        if (Id != null)
+        {
+            Book = API.GetBook(Id.Value);
+        }
+    }
+
+    private void handleAdd(int id)
+    {
+        API.SetAmount(2, id, 1);
+    }
+
+    private bool handlePurchase(int id)
+    {
+        return API.BuyBooks(1, id);
+    }
+
+    private void DeleteBook(int id)
+    {
+        API.DeleteBook(2, id);
+        if (Book.Amount == 0)
+        {
+            NavigationManager.NavigateTo("/books");
+        }
+    }
+
+    public void HandleOnValidSubmit()
+    {
+        if (Id == null)
+        {
+            API.AddBook(2, Book.Title, Book.Author, Book.Price, 1);
+            NavigationManager.NavigateTo("/books");
+        }
+        else
+        {
+            API.UpdateBook(2, Book.Id, Book.Title, Book.Author, Book.Price);
+            NavigationManager.NavigateTo("/books");
+        }
+    }
+}

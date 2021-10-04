@@ -1,0 +1,71 @@
+﻿@page  "/books"
+
+@inject Inlämning_API.WebbShopAPI API
+@inject NavigationManager NavigationManager
+
+
+
+<div class="container-fluid">
+    <div class="row justify-content-between mb-3">
+        <h3>Book List</h3>
+        <button type="button" class="btn btn-sm btn-success" @onclick='() =>
+            NavigationManager.NavigateTo("/books/create")'>
+            <i class="fas fa-plus pr-2">Create</i>
+        </button>
+    </div>
+    <div class="row">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Author</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Books == null)
+                {
+                    <tr>
+                        <td>
+                            No Books found!
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var book in Books)
+                    {
+                        <tr @onclick="() => NavigateTo(book.Id)">
+                            <th scope="row">@book.Id</th>
+                            <td>@book.Title</td>
+                            <td>@book.Author</td>
+                            <td>@book.Price kr</td>
+                            <td>@book.Amount</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@code {
+    List<Inlämning_API.Models.Book> Books = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        API.Login("Administrator", "CodicRulez");
+        API.Login("TestCustomer", "Codic2021");
+        Books = API.GetAllBooks().ToList();
+    }
+
+   
+
+    private void NavigateTo(int bookId)
+    {
+        NavigationManager.NavigateTo($"/books/details/{bookId}");
+    }
+}
